@@ -101,6 +101,7 @@ public class QuizGame : MonoBehaviour
         }
 
         {   // TODO load in the TextAsset for the specified "file"
+            GameManager.GetXMLFile("Game");
         }
 
         // begin the game
