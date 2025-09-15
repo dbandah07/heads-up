@@ -19,6 +19,39 @@ public class QuizGame : MonoBehaviour
     public float m_tiltAng = 45.0f;
     public float m_resetAng = 30.0f;
 
+    int correct_counter = 0;
+    int incorrect_counter = 0;
+
+    public static int f_correct = 0;
+    public static int f_incorrect = 0;
+
+    void keepAlive ()
+    {
+        DontDestroyOnLoad(gameObject);
+        SceneManager.sceneLoaded += OnSceneLoaded; 
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "End") {
+            TextMeshProUGUI counters = GameObject.Find("EndText").GetComponent<TextMeshProUGUI>();
+            if (counters != null) { 
+                counters.text = "Correct: " + f_correct + "\nWrong: " + f_incorrect;
+            }
+            else
+            {
+                Debug.LogError("EndText object not found in End Scene");
+            }
+        }
+    }
+
+    void getRid ()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+
+
     /// <summary>
     /// This is a single message to display
     /// </summary>
@@ -65,8 +98,10 @@ public class QuizGame : MonoBehaviour
     Color m_wrongTextColor;
 
     // Start is called before the first frame update
+
     void Start()
     {
+        keepAlive();
         Screen.sleepTimeout = SleepTimeout.NeverSleep;  // this keeps the phone app from going into sleep mode
 
         // remember the original color of the text and background
@@ -101,9 +136,43 @@ public class QuizGame : MonoBehaviour
         }
 
         {   // TODO load in the TextAsset for the specified "file"
-            string filename = GameManager.GetXMLFile();
-            TextAsset xmlAsset = Resources.Load<TextAsset>(filename);
+            TextAsset xmlAsset = Resources.Load<TextAsset>(GameManager.GetXMLFile());
 
+
+            if (xmlAsset != null)
+            {
+                using (var reader = new System.IO.StringReader(xmlAsset.text))
+                {
+                    // ignores extra namespace - reading in xml file doesnt work, testing to see if it works
+                    var xml_root = new System.Xml.Serialization.XmlRootAttribute("QuizList");
+                    XmlSerializer xml_serializer = new XmlSerializer(typeof(QuizList), xml_root);
+
+                    m_list = (QuizList)xml_serializer.Deserialize(reader);
+                }
+
+                Resources.UnloadAsset(xmlAsset);
+            }
+
+            // fisher-yates shuffling method : 
+            if (m_list != null && m_list.elements != null)
+            {
+                for (int i = 0; i < m_list.elements.Count; i++)
+                {
+                    QuizElement temp = m_list.elements[i];
+                    int idx = Random.Range(i, m_list.elements.Count);
+                    m_list.elements[i] = m_list.elements[idx];
+                    m_list.elements[idx] = temp;
+                }
+            }
+
+            //     if (m_list == null || m_list.elements == null)
+            //     {
+            //          Debug.LogError("XML not loaded properly.");
+            // }
+            //      else
+            //      {
+            //          Debug.Log("Loaded " + m_list.elements.Count + " questions");
+            //      }
 
 
 
@@ -151,6 +220,8 @@ public class QuizGame : MonoBehaviour
   //      m_text.text = ang.ToString(); // display angle
   //  }
 
+
+
     float ReadAngle()
     {
         float ang = 0.0f;
@@ -191,12 +262,26 @@ public class QuizGame : MonoBehaviour
             }
 
         }
+
+        if (Input.GetKey(KeyCode.UpArrow))
+        {
+            quizInput.up = true;
+            quizInput.down = false;
+            quizInput.center = false;
+        }
+        else if (Input.GetKey(KeyCode.DownArrow))
+        {
+            quizInput.down = true;
+            quizInput.up = false;
+            quizInput.center = false;
+        }
+
         return quizInput;
     }
 
     IEnumerator RunGame()
     {
-        {   // TODO first wait for the phone to be upright
+        {  // TODO first wait for the phone to be upright
 
             bool centered = false;
 
@@ -213,7 +298,7 @@ public class QuizGame : MonoBehaviour
 
         while (false == isDone)
         {
-            {   // TODO wait for a choice (up or down)
+               // TODO wait for a choice (up or down)
                 // then wait for 2 seconds
                 // then wait for the phone to be re-centered
                 // finally advance to the next question by calling NextQuestion()
@@ -227,7 +312,7 @@ public class QuizGame : MonoBehaviour
                     if (input.up)
                     {
                         Correct();
-                        yield return new WaitForSeconds(2.0f); 
+                        yield return new WaitForSeconds(2.0f);
 
 
                         // inner loop : wait till phone is centered
@@ -249,17 +334,21 @@ public class QuizGame : MonoBehaviour
                         }
                         choice = true; // exit 
                     }
+
                     else
-                    { // wait till nxt frame
-                        yield return null; 
+                    {
+                        yield return null;
                     }
                 }
-            }
-            yield return null;
+                isDone = NextQuestion();
         }
 
-        // We are done... move on to the wrap-up screen
-        SceneManager.LoadScene("End");
+
+            // We are done... move on to the wrap-up screen
+            f_correct = correct_counter;
+            f_incorrect = incorrect_counter;
+            SceneManager.LoadScene("End");
+        
     }
 
     void Correct()
@@ -271,6 +360,8 @@ public class QuizGame : MonoBehaviour
         {
             m_rightSound.Play();
         }
+        correct_counter++; // added - choose ur path
+
     }
 
     void Wrong()
@@ -282,6 +373,7 @@ public class QuizGame : MonoBehaviour
         {
             m_wrongSound.Play();
         }
+        incorrect_counter++; // added - choose ur path
     }
 
     /// <summary>
