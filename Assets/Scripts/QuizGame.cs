@@ -263,18 +263,18 @@ public class QuizGame : MonoBehaviour
 
         }
 
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
-            quizInput.up = true;
-            quizInput.down = false;
-            quizInput.center = false;
-        }
-        else if (Input.GetKey(KeyCode.DownArrow))
-        {
-            quizInput.down = true;
-            quizInput.up = false;
-            quizInput.center = false;
-        }
+//        if (Input.GetKey(KeyCode.UpArrow))
+//        {
+//            quizInput.up = true;
+//            quizInput.down = false;
+//            quizInput.center = false;
+//        }
+//        else if (Input.GetKey(KeyCode.DownArrow))
+//        {
+//            quizInput.down = true;
+//            quizInput.up = false;
+//            quizInput.center = false;
+//        }
 
         return quizInput;
     }
