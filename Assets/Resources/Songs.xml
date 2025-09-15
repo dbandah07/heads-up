@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<QuizList xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <elements>
+    <QuizElement>
+      <text>Dynamite by Taio Cruz</text>
+    </QuizElement>
+    <QuizElement>
+      <text>Bad Romance by Lady Gaga</text>
+    </QuizElement>
+    <QuizElement>
+      <text>Gasolina by Daddy Yankee</text>
+    </QuizElement>
+    <QuizElement>
+      <text>On the Floor by Jennifer Lopez, Pitbull</text>
+    </QuizElement>
+    <QuizElement>
+      <text>Cool for the Summer by Demi Lovato</text>
+    </QuizElement>
+    <QuizElement>
+      <text>Maneater by Nelly Furtado</text>
+    </QuizElement>
+    <QuizElement>
+      <text>Hot N Cold by Katy Perry</text>
+    </QuizElement>
+    <QuizElement>
+      <text>If U Seek Amy by Britney Spears</text>
+    </QuizElement>
+  </elements>
+</QuizList>

@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
     public GameObject m_pauseMenu;
 
     static bool s_isPaused = false;
-    static string s_xmlFile = "";
+    static string s_xmlFile = "Games";
 
     // Start is called before the first frame update
     void Start()

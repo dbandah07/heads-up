@@ -101,7 +101,12 @@ public class QuizGame : MonoBehaviour
         }
 
         {   // TODO load in the TextAsset for the specified "file"
-            GameManager.GetXMLFile("Game");
+            string filename = GameManager.GetXMLFile();
+            TextAsset xmlAsset = Resources.Load<TextAsset>(filename);
+
+
+
+
         }
 
         // begin the game
@@ -139,15 +144,22 @@ public class QuizGame : MonoBehaviour
 #endif
     }
 
-    void Update()
-    {
+  //  void Update()
+  //  {
         // TODO your code here
-    }
+  //      float ang = ReadAngle();
+  //      m_text.text = ang.ToString(); // display angle
+  //  }
 
     float ReadAngle()
     {
         float ang = 0.0f;
         {   // TODO read the accelerometer, and turn that into an angle
+            Vector3 gravity = Input.acceleration;
+            if (gravity != Vector3.zero)
+            {
+                ang = Mathf.Asin(gravity.z) * Mathf.Rad2Deg;
+            }
         }
         return ang;
     }
@@ -156,6 +168,28 @@ public class QuizGame : MonoBehaviour
     {
         QuizInput quizInput = new QuizInput();
         {   // TODO use ReadAngle and input.GetKey() to fill in quizInput
+            float ang = ReadAngle();
+            
+            // acceleration input
+            if (ang > m_tiltAng)
+            {
+                quizInput.up = false;
+                quizInput.down = true;
+                quizInput.center = false;
+            }
+            else if (ang < -m_tiltAng)
+            {
+                quizInput.up = true;
+                quizInput.down = false;
+                quizInput.center = false;
+            }
+            else if (ang > -m_resetAng && ang < m_resetAng)
+            {
+                quizInput.up = false;
+                quizInput.down = false;
+                quizInput.center = true;
+            }
+
         }
         return quizInput;
     }
@@ -163,6 +197,14 @@ public class QuizGame : MonoBehaviour
     IEnumerator RunGame()
     {
         {   // TODO first wait for the phone to be upright
+
+            bool centered = false;
+
+            while (!centered)
+            {
+                centered = ReadInput().center;
+                yield return null; // wait til next frame
+            }
         }
 
         // Reset to the beginning of the list
@@ -175,6 +217,43 @@ public class QuizGame : MonoBehaviour
                 // then wait for 2 seconds
                 // then wait for the phone to be re-centered
                 // finally advance to the next question by calling NextQuestion()
+                bool choice = false;
+
+                while (!choice)
+                {
+                    QuizInput input = ReadInput();
+
+
+                    if (input.up)
+                    {
+                        Correct();
+                        yield return new WaitForSeconds(2.0f); 
+
+
+                        // inner loop : wait till phone is centered
+                        while (!ReadInput().center)
+                        {
+                            yield return null;
+                        }
+
+                        choice = true; // exit outer loop
+                    }
+                    else if (input.down)
+                    {
+                        Wrong();
+                        yield return new WaitForSeconds(2.0f);
+
+                        while (!ReadInput().center)
+                        {
+                            yield return null;
+                        }
+                        choice = true; // exit 
+                    }
+                    else
+                    { // wait till nxt frame
+                        yield return null; 
+                    }
+                }
             }
             yield return null;
         }
@@ -213,13 +292,27 @@ public class QuizGame : MonoBehaviour
     bool NextQuestion()
     {
         bool ret = true;
+        m_listElement++;
 
-        {
-            // TODO advance to the next element in the list
-            // set m_text.text to the text of the new question
-            // If the list is NOT over, set ret = false
-        }
+        {  
+        // TODO advance to the next element in the list
+        // set m_text.text to the text of the new question
+        // If the list is NOT over, set ret = false
+            if (m_listElement < m_list.elements.Count)
+            {
+                m_text.text = m_list.elements[m_listElement].text; // show nxt q
+                ret = false;
+            }
 
+            else
+            {
+                ret = true;
+            }
+
+         }
+            
+
+   
         // reset the colors to the original colors for the question
         m_text.color = m_origTextColor;
         m_background.color = m_origBackgroundColor;
